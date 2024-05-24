@@ -1,0 +1,69 @@
+	Gramatica Soccer Training
+
+Gramatica = {
+
+    T = {PlanEntrenamiento, Entrenamiento, Calentamiento, Tactica, JuegoLibre, Persona, Asignacion, Nombre, Rol,
+          ACTIVIDAD, REPETITIONS, TEAM, PASS_CONDITION, ROLE, ID, a, ;, :, ',', PERSON_ATTRIBUTES, STRING, EPSILON}
+
+    NT = {<Document>, <BloquePlanEntrenamiento>, <BloqueEntrenamiento>, <Entrenamiento>, <BloqueCalentamiento>,
+         <BloqueTactica>, <BloqueJuego>, <GrupoActividades>, <Actividades>, <Actividad>, <BloquePersonas>, <Persona>,
+         <AtributosPersona>, <AtributoNombre>, <AtributoRol>, <BloqueAsignacion>, <Asignacion>}
+
+    Axioma = <Document>
+
+    Producciones= {
+        <Document>                  ::= <BloquePlanEntrenamiento><BloquePersonas><BloqueAsignacion>
+        <BloquePlanEntrenamiento>   ::= PlanEntrenamiento:<BloqueEntrenamiento>
+        <BloqueEntrenamiento>       ::= <Entrenamiento> | <BloqueEntrenamiento><Entrenamiento>
+        <Entrenamiento>             ::= Entrenamiento STRING:<BloqueCalentamiento><BloqueTactica><BloqueJuego>
+        <BloqueCalentamiento>       ::= Calentamiento:<GrupoActividades>;
+        <BloqueTactica>             ::= Tactica:<GrupoActividades>;
+        <BloqueJuego>               ::= JuegoLibre:<GrupoActividades>;
+        <GrupoActividades>          ::= <Actividades> | <GrupoActividades>,<Actividades>
+        <Actividades>               ::= <Actividad> | <Actividades><Actividad>
+        <Actividad>                 ::= ACTIVIDAD | REPETITIONS | TEAM | PASS_CONDITION
+        <BloquePersonas>            ::= <Persona>|<BloquePersonas><Persona>
+        <Persona>                   ::= Persona ROLE ID:<AtributosPersona>;
+        <AtributosPersona>          ::= <AtributoNombre>, <AtributoRol>
+        <AtributoNombre>            ::= Nombre: STRING
+        <AtributoRol>               ::= Rol: STRING
+        <BloqueAsignacion>          ::= <Asignacion> | <BloqueAsignacion><Asignacion>
+        <Asignacion>                ::= Asignacion ID a STRING;
+
+    }
+
+    //Gramática LL1
+
+        NT = {<Document>, <BloquePlanEntrenamiento>, <BloqueEntrenamiento>, <A>, <Entrenamiento>, <BloqueCalentamiento>,
+            <BloqueTactica>, <BloqueJuego>, <GrupoActividades>, <B>, <Actividades>, <C>, <Actividad>, <BloquePersonas>,
+             <D>, <Persona>, <AtributosPersona>, <AtributoNombre>, <AtributoRol>, <BloqueAsignacion>, <E>, <Asignacion>}
+
+        Axioma = <Document>
+
+        Producciones= {
+            <Document>                  ::= <BloquePlanEntrenamiento><BloquePersonas><BloqueAsignacion>
+            <BloquePlanEntrenamiento>   ::= PlanEntrenamiento:<BloqueEntrenamiento>
+            <BloqueEntrenamiento>       ::= <Entrenamiento><A>
+    	    <A>                         ::= <BloqueEntrenamiento>| Epsilon
+            <Entrenamiento>             ::= Entrenamiento STRING:<BloqueCalentamiento><BloqueTactica><BloqueJuego>
+            <BloqueCalentamiento>       ::= Calentamiento:<GrupoActividades>;
+            <BloqueTactica>             ::= Tactica:<GrupoActividades>;
+            <BloqueJuego>               ::= JuegoLibre:<GrupoActividades>;
+            <GrupoActividades>          ::= <Actividades><B>
+    	    <B> 	                    ::= <GrupoActividades>|Epsilon
+            <Actividades>               ::= <Actividad><C>
+    		<C>                 	    ::= ,<Actividades>|Epsilon
+            <Actividad>                 ::= ACTIVIDAD | REPETITIONS | TEAM | PASS_CONDITION
+            <BloquePersonas>            ::= <Persona><D>
+            <D>                 	    ::= <BloquePersonas>|Epsilon
+            <Persona>                   ::= Persona ROLE ID:<AtributosPersona>;
+            <AtributosPersona>          ::= <AtributoNombre>, <AtributoRol>
+            <AtributoNombre>            ::= Nombre: STRING
+            <AtributoRol>               ::= Rol: STRING
+            <BloqueAsignacion>          ::= <Asignacion><E>
+    	    <E>                 	    ::= <BloqueAsignacion>|Epsilon
+            <Asignacion>                ::= Asignacion ID a STRING;
+
+        }
+
+}

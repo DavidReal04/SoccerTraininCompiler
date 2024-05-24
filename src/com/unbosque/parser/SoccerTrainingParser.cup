@@ -1,0 +1,185 @@
+package com.unbosque.parser;
+
+import com.unbosque.ast.*;
+import java_cup.runtime.*;
+import java.util.ArrayList;
+import java.util.List;
+
+parser code {:
+
+    public Document document = new Document("HTML", "", null);
+    private TrainingTag training_tag_node = new TrainingTag("TABLE", "", null);
+    private PersonsTag persons_tag_node = new PersonsTag("TABLE", "", null);
+    private AssignmentsTag assignments_tag_node = new AssignmentsTag("TABLE", "", null);
+        
+    public void report_error(String message, Object info) {
+        StringBuilder m = new StringBuilder("Error");
+        if (info instanceof java_cup.runtime.Symbol) {
+            java_cup.runtime.Symbol s = ((java_cup.runtime.Symbol) info);
+            if (s.left >= 0) {                
+                m.append(" in line " + (s.left + 1));   
+                if (s.right >= 0)                    
+                    m.append(", column " + (s.right + 1));
+            }
+        }
+        m.append(" : " + message);
+        System.err.println(m);
+    }
+
+    public void report_fatal_error(String message, Object info) {
+        report_error(message, info);
+        System.exit(1);
+    }
+    
+    public void initTables() {
+        TagAttribute ta = new TagAttribute("border", "1");
+        ArrayList<TagAttribute> ta_arr = new ArrayList<>();
+        ta_arr.add(ta);
+        training_tag_node = new TrainingTag("TABLE", "", ta_arr); 
+        persons_tag_node = new PersonsTag("TABLE", "", ta_arr);
+        assignments_tag_node = new AssignmentsTag("TABLE", "", ta_arr);
+    }
+:};
+
+terminal String PLAN_ENTRENAMIENTO, ENTRENAMIENTO, CALENTAMIENTO, TACTICA, JUEGO_LIBRE, ACTIVITY, PERSONA, ASIGNACION, PERSON_ID, REPETITIONS, TEAM, PASS_CONDITION, PERSON_ROLE, PERSON_ATTRIBUTES, STRING_ATTRIBUTES, ASIGNATION_TOKEN, SEMICOLON, COLON, COMMA;
+
+non terminal Document document;
+non terminal TrainingTag training_tag;
+non terminal List<Training> trainings;
+non terminal Training training;
+non terminal WarmUpBlock warmup_block;
+non terminal TacticsBlock tactics_block;
+non terminal FreePlayBlock freeplay_block;
+non terminal List<Activity> activities_group;
+non terminal Activity activity;
+non terminal PersonsTag persons_tag;
+non terminal List<Person> person_block;
+non terminal Person person;
+non terminal PersonAttributes person_attributes;
+non terminal PersonNameAttribute person_name_attribute;
+non terminal PersonRoleAttribute person_role_attribute;
+non terminal AssignmentsTag assignments_tag;
+non terminal List<Assignment> assignment_block;
+non terminal Assignment assignment;
+
+start with document;
+
+document ::= PLAN_ENTRENAMIENTO COLON training_tag persons_tag assignments_tag
+            {: 
+                HTMLNode head_tag = new HTMLNode("HEAD", "", null);
+                HTMLNode body_tag = new HTMLNode("BODY", "", null);
+                document.addChild(head_tag);
+                document.addChild(body_tag);
+                body_tag.addChild(training_tag_node);
+                body_tag.addChild(persons_tag_node);
+                body_tag.addChild(assignments_tag_node);
+            :};
+
+training_tag ::= training
+                | training_tag:t training
+                {: 
+                    training_tag_node.addChild(t);
+                :};
+
+training ::= ENTRENAMIENTO STRING_ATTRIBUTES:s COLON warmup_block:w tactics_block:t freeplay_block:f SEMICOLON
+            {: 
+                Training trainingNode = new Training("TR", "", null);
+                trainingNode.addChild(new HTMLNode("TD", s, null));
+                trainingNode.addChild(w);
+                trainingNode.addChild(t);
+                trainingNode.addChild(f);
+                RESULT = trainingNode;
+            :};
+
+warmup_block ::= CALENTAMIENTO COLON activities_group:a SEMICOLON
+                {: 
+                    WarmUpBlock warmUpNode = new WarmUpBlock("TD", "", null);
+                    for (Activity act : a) {
+                        warmUpNode.addChild(act);
+                    }
+                    RESULT = warmUpNode;
+                :};
+
+tactics_block ::= TACTICA COLON activities_group:a SEMICOLON
+                 {: 
+                     TacticsBlock tacticsNode = new TacticsBlock("TD", "", null);
+                     for (Activity act : a) {
+                         tacticsNode.addChild(act);
+                     }
+                     RESULT = tacticsNode;
+                 :};
+
+freeplay_block ::= JUEGO_LIBRE COLON activities_group:a SEMICOLON
+                  {: 
+                      FreePlayBlock freePlayNode = new FreePlayBlock("TD", "", null);
+                      for (Activity act : a) {
+                          freePlayNode.addChild(act);
+                      }
+                      RESULT = freePlayNode;
+                  :};
+
+activities_group ::= activity
+                    | activities_group:a COMMA activity:c
+                    {: 
+                        List<Activity> list = new ArrayList<>();
+                        list.add(c);
+                        list.addAll(a);
+                        RESULT = list;
+                    :};
+
+activity ::= ACTIVITY
+            | REPETITIONS
+            | TEAM
+            | PASS_CONDITION
+            {: 
+                
+            :};
+
+persons_tag ::= person
+               | persons_tag:p person
+               {: 
+                   persons_tag_node.addChild(p);
+               :};
+
+person ::= PERSONA PERSON_ROLE:r PERSON_ID:i COLON person_attributes:a SEMICOLON
+          {: 
+              Person personNode = new Person("TR", "", null);
+              personNode.addChild(new HTMLNode("TD", r, null));
+              personNode.addChild(new HTMLNode("TD", i, null));
+              personNode.addChild(a);
+              RESULT = personNode;
+          :};
+
+person_attributes ::= person_name_attribute:n COMMA person_role_attribute:r
+                     {: 
+                         PersonAttributes personAttributesNode = new PersonAttributes("TD", "", null);
+                         personAttributesNode.addChild(n);
+                         personAttributesNode.addChild(r);
+                         RESULT = personAttributesNode;
+                     :};
+
+person_name_attribute ::= PERSON_ATTRIBUTES COLON STRING_ATTRIBUTES:s
+                        {: 
+                            PersonNameAttribute personNameAttrNode = new PersonNameAttribute("TD", s, null);
+                            RESULT = personNameAttrNode;
+                        :};
+
+person_role_attribute ::= PERSON_ATTRIBUTES COLON STRING_ATTRIBUTES:s
+                        {: 
+                            PersonRoleAttribute personRoleAttrNode = new PersonRoleAttribute("TD", s, null);
+                            RESULT = personRoleAttrNode;
+                        :};
+
+assignments_tag ::= assignment
+                   | assignments_tag:a assignment
+                   {: 
+                       assignments_tag_node.addChild(a);
+                   :};
+
+assignment ::= ASIGNACION PERSON_ID:i ASIGNATION_TOKEN STRING_ATTRIBUTES:s SEMICOLON
+              {: 
+                  Assignment assignmentNode = new Assignment("TR", "", null);
+                  assignmentNode.addChild(new HTMLNode("TD", i, null));
+                  assignmentNode.addChild(new HTMLNode("TD", s, null));
+                  RESULT = assignmentNode;
+              :};

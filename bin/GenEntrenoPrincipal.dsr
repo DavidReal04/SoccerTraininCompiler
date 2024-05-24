@@ -1,0 +1,45 @@
+//Comentarios
+PlanEntrenamiento:
+    Entrenamiento "Dia 1":
+        Calentamiento:
+            trotar,
+            caminar, //Comentarios
+            estirar;
+        Tactica:	
+            pases cortos (x10),
+            juego de posicion (x20);
+        JuegoLibre:
+            5 vs 5,
+            3 goles y pasa;
+    /*
+    Comentario
+    */
+    Entrenamiento "Dia 2":
+        Calentamiento:
+            ejercicios de velocidad,
+            ejercicios de agilidad;
+        Tactica:
+            estrategias defensivas,
+            jugadas de corner;
+        JuegoLibre:
+            partidos amistosos;
+
+Persona Entrenador "E001":
+    Nombre: "Arturo Reyes",
+    Rol: "Entrenador";
+
+Persona Jugador "J001":
+    Nombre: "Carlos Bacca",
+    Rol: "Jugador";
+
+Persona Jugador "J002":
+    Nombre: "Santiago Mele",
+    Rol: "Jugador";
+
+Asignacion "E001" a "Dia 1";
+
+Asignacion "J001" a "Dia 1";
+
+Asignacion "J002" a "Dia 1";
+
+Asignacion "J002" a "Dia 2";
